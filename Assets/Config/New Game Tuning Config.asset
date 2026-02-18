@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 831a429fe23178540ab8d1f2581af022, type: 3}
+  m_Name: New Game Tuning Config
+  m_EditorClassIdentifier: Assembly-CSharp::GameTuningConfig
+  rfidMap:
+  - id: BC AD B7 03
+    item: 2
+  - id: 
+    item: 1
+  - id: 
+    item: 3
+  presenceThreshold: 0.2
+  maxPressureWeight: 3
+  burnPressureThreshold: 2.7
+  weightSmoothing: 10
+  cookProfiles:
+  - item: 2
+    perfectMin: 3.2
+    perfectMax: 4.2
+    burnTimeLimit: 5.6
+    baseCookSpeed: 1
+  - item: 1
+    perfectMin: 1.6
+    perfectMax: 2.2
+    burnTimeLimit: 3
+    baseCookSpeed: 1
+  - item: 3
+    perfectMin: 1.6
+    perfectMax: 2.2
+    burnTimeLimit: 3
+    baseCookSpeed: 1

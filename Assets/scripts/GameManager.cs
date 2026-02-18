@@ -1,50 +1,107 @@
-using System;
 using UnityEngine;
+using TMPro;
+using System;
 
 public class GameManager : MonoBehaviour
 {
-    public bool IsGameStart;
-    public bool IsCustomerArrived;
-    public int CustomerCount;
-    public int BunCount;
-    public int PattyCount;
+    [Header("Refs")]
+    public PlateController plate;
+    public CustomerManager customers;      // Step 6 will implement this
+    public PanController pan;              // for resets / safety (optional)
 
-    private void Start()
+    [Header("UI")]
+    public TMP_Text timerText;
+    public TMP_Text scoreText;
+
+    [Header("Game Settings")]
+    public float gameDurationSeconds = 120f;
+
+    public bool IsRunning { get; private set; }
+    public int Score { get; private set; }
+
+    float timeLeft;
+
+    void Awake()
     {
-        IsGameStart = false;
-        IsCustomerArrived = false;
-        CustomerCount = 0;
+        if (plate != null)
+            plate.OnBurgerServed += HandleBurgerServed;
+
+        UpdateUI();
     }
 
-    private void OnEnable()
+    void OnDestroy()
     {
-        InputBinding.Instance.OnStartPressed += StartGame;
-        InputBinding.Instance.OnNextCustomerPressed += NextCustomerArrived;
+        if (plate != null)
+            plate.OnBurgerServed -= HandleBurgerServed;
     }
 
-    private void OnDisable()
+    void Update()
     {
-        InputBinding.Instance.OnStartPressed -= StartGame;
-        InputBinding.Instance.OnNextCustomerPressed -= NextCustomerArrived;
-    }
+        if (!IsRunning) return;
 
-    private void StartGame()
-    {
-        IsGameStart = true;
-        InputBinding.Instance.OnStartPressed -= StartGame;
-    }
-
-    public void NextCustomerArrived()
-    {
-        if (IsCustomerArrived)
+        timeLeft -= Time.deltaTime;
+        if (timeLeft <= 0f)
+        {
+            timeLeft = 0f;
+            EndGame();
             return;
+        }
 
-        IsCustomerArrived = true;
+        UpdateTimerUI();
     }
 
-    public void SendToPlate()
+    // Hook this to Start button
+    public void StartGame()
     {
+        IsRunning = true;
+        Score = 0;
+        timeLeft = gameDurationSeconds;
 
+        plate?.ResetPlate();
+        pan?.HardReset(); // clears held item/pan state
+
+        customers?.StartLoop(); // spawns customer and waits for serves
+
+        UpdateUI();
     }
 
+    // Hook this to End button
+    public void EndGame()
+    {
+        IsRunning = false;
+
+        customers?.StopLoop();
+
+        UpdateUI();
+    }
+
+    void HandleBurgerServed()
+    {
+        if (!IsRunning) return;
+
+        Score++;
+        UpdateScoreUI();
+
+        // Tell customer manager to leave and spawn next
+        customers?.OnServed();
+    }
+
+    void UpdateUI()
+    {
+        UpdateTimerUI();
+        UpdateScoreUI();
+    }
+
+    void UpdateTimerUI()
+    {
+        if (!timerText) return;
+        int t = Mathf.CeilToInt(timeLeft);
+        timerText.text = $"{t / 60:0}:{t % 60:00}";
+    }
+
+    void UpdateScoreUI()
+    {
+        if (!scoreText) return;
+        scoreText.text = Score.ToString();
+    }
 }

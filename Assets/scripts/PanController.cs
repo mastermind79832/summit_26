@@ -37,6 +37,8 @@ public class PanController : MonoBehaviour
     float cookProgress;
     float lowPressureTimer;
 
+    bool hasStartedCooking;
+
     void OnEnable()
     {
         if (reader != null) reader.OnRfidDetected += HandleRfid;
@@ -60,6 +62,7 @@ public class PanController : MonoBehaviour
         {
             PanItem = item;
             state = State.ReadyOnPan;
+            hasStartedCooking = false;
             IsBurnt = false;
             cookProgress = 0f;
             Cook01 = 0f;
@@ -103,7 +106,11 @@ public class PanController : MonoBehaviour
             lowPressureTimer += Time.deltaTime;
             if (lowPressureTimer >= removeHoldSeconds)
             {
-                ResolveOnRemoval();
+                if (hasStartedCooking)
+                {
+                    ResolveOnRemoval();   // will show under/perfect/burnt
+                }
+                // else: never cooked, so cancel silently (no undercooked)
                 ResetPanInternal();
             }
             return;
@@ -124,6 +131,7 @@ public class PanController : MonoBehaviour
         }
 
         // Now cooking
+        hasStartedCooking = true;
         state = State.Cooking;
 
         var profile = config.GetProfile(PanItem);
@@ -192,6 +200,7 @@ public class PanController : MonoBehaviour
         IsBurnt = false;
         cookProgress = 0f;
         Cook01 = 0f;
-        lowPressureTimer = 0f;
+        lowPressureTimer = 0f;   
+        hasStartedCooking = false;
     }
 }

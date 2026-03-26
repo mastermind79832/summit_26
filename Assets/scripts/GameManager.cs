@@ -1,22 +1,25 @@
 using UnityEngine;
 using TMPro;
-using System;
 
 public class GameManager : MonoBehaviour
 {
     [Header("Refs")]
     public PlateController plate;
-    public CustomerManager customers;      // Step 6 will implement this
-    public PanController pan;              // for resets / safety (optional)
+    public CustomerManager customers;
+    public PanController pan;
 
     [Header("UI")]
     public TMP_Text timerText;
     public TMP_Text scoreText;
 
+    [Header("Game Over UI")]
+    public GameObject gameOverRoot;     // assign GameOverPanel here
+
     [Header("Game Settings")]
     public float gameDurationSeconds = 120f;
 
     public bool IsRunning { get; private set; }
+    public bool IsGameOver { get; private set; }
     public int Score { get; private set; }
 
     float timeLeft;
@@ -26,6 +29,7 @@ public class GameManager : MonoBehaviour
         if (plate != null)
             plate.OnBurgerServed += HandleBurgerServed;
 
+        ShowGameOver(false);
         UpdateUI();
     }
 
@@ -43,35 +47,50 @@ public class GameManager : MonoBehaviour
         if (timeLeft <= 0f)
         {
             timeLeft = 0f;
-            EndGame();
+            GameOver();
             return;
         }
 
         UpdateTimerUI();
     }
 
-    // Hook this to Start button
+    // Hook to Start button
     public void StartGame()
     {
         IsRunning = true;
+        IsGameOver = false;
+
         Score = 0;
         timeLeft = gameDurationSeconds;
 
         plate?.ResetPlate();
-        pan?.HardReset(); // clears held item/pan state
+        pan?.HardReset();
+        customers?.StartLoop();
 
-        customers?.StartLoop(); // spawns customer and waits for serves
-
+        ShowGameOver(false);
         UpdateUI();
     }
 
-    // Hook this to End button
+    // Hook to End button (manual stop)
     public void EndGame()
     {
         IsRunning = false;
 
         customers?.StopLoop();
+        // Not a "Game Over" unless you want it to be:
+        // ShowGameOver(true);
 
+        UpdateUI();
+    }
+
+    void GameOver()
+    {
+        IsRunning = false;
+        IsGameOver = true;
+
+        customers?.StopLoop();
+
+        ShowGameOver(true);
         UpdateUI();
     }
 
@@ -81,9 +100,12 @@ public class GameManager : MonoBehaviour
 
         Score++;
         UpdateScoreUI();
-
-        // Tell customer manager to leave and spawn next
         customers?.OnServed();
+    }
+
+    void ShowGameOver(bool show)
+    {
+        if (gameOverRoot) gameOverRoot.SetActive(show);
     }
 
     void UpdateUI()

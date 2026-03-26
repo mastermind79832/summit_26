@@ -19,9 +19,9 @@ MonoBehaviour:
     item: 1
   - id: 
     item: 3
-  presenceThreshold: 0.2
-  maxPressureWeight: 3
-  burnPressureThreshold: 2.7
+  presenceThreshold: 10
+  maxPressureWeight: 80
+  burnPressureThreshold: 90
   weightSmoothing: 10
   cookProfiles:
   - item: 2
